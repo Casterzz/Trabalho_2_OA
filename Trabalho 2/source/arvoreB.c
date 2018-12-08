@@ -18,7 +18,7 @@ int insere_chave (no **raiz, char* chave, int *prr, int *ID) {
         pNo->prr[pNo->qtd_chaves] = *prr;
         pNo->qtd_chaves++;
 
-        insertionSort(pNo->chaves, pNo->qtd_chaves, prr_lista);
+        insertionSort(pNo->chaves, pNo->qtd_chaves, pNo->prr);
         //ordena_ponteiros(pNo, pNo->qtd_chaves, changes);
     } else {
         for (int i = 0; i < pNo->qtd_chaves; i++) {
@@ -155,7 +155,7 @@ void promove (no **raiz, no *pNo, char lista[ORDEM][TAM_CHAVE], int qtd_lista, i
             pNo->pai->filhos[pNo->pai->qtd_chaves+1] = pNovo;
             ordena_ponteiros(pNo->pai, pNo->pai->qtd_chaves+1);
 
-            insertionSort(pNo->pai->chaves, pNo->pai->qtd_chaves, prr_lista);
+            insertionSort(pNo->pai->chaves, pNo->pai->qtd_chaves, pNo->pai->prr);
             //ordena_ponteiros(pNo->pai, pNo->pai->qtd_chaves, changes);
 
         // Se nao tiver espaco, passa elemento divisor para cima e promove    
@@ -207,7 +207,7 @@ no* busca_no (no *no_recebido, char* chave) {
     return busca_no (aux->filhos[i], chave);
 }
 
-void insertionSort(char array[ORDEM][TAM_CHAVE], int n, int prr_lista[ORDEM]) { 
+void insertionSort(char array[ORDEM][TAM_CHAVE], int n, int* prr_lista) { 
     int i, j; 
     char chave[TAM_CHAVE];
     int prr;
@@ -287,19 +287,21 @@ no_leitura *cria_no(FILE *arq){
 
 	no_leitura *no_virtual = (no_leitura*)malloc(sizeof(no_leitura));
 	for (int i = 0; i < ORDEM-1; i++) {
-		fgets(no_virtual->chaves[i], TAM_CHAVE-1, arq);
+		fgets(no_virtual->chaves[i], TAM_CHAVE, arq);
 		fgets(lixo, 1, arq);
-		fscanf(arq, "%d\n", &no_virtual->prr[i]);
+		fscanf(arq, "%d", &no_virtual->prr[i]);
+        fgets(lixo, 5, arq);
 	}
 	for (int i = 0; i < ORDEM; i++) {
-		fscanf(arq, "%d ", &no_virtual->filhos[i]);
+		fscanf(arq, "%d", &no_virtual->filhos[i]);
+        fgets(lixo, 5, arq);
 	}
 	return no_virtual;
 }
 
 int verifica_chave(char chave[TAM_CHAVE], no_leitura *no_criado) {
 	for (int i = 0; i < ORDEM; i++) {
-		if (chave == no_criado->chaves[i]) {
+		if (strcmp(chave, no_criado->chaves[i]) == 0) {
 			return no_criado->prr[i];
 		}
 	}
@@ -307,10 +309,10 @@ int verifica_chave(char chave[TAM_CHAVE], no_leitura *no_criado) {
 }
 
 int direciona(char chave[TAM_CHAVE], no_leitura *no_criado) {
-	for (int i = 0; i < ORDEM; i++) {
-		if (strcmp(chave, no_criado->chaves[i]) > 0) {
+    for (int i = 0; i < ORDEM; i++) {
+		if (strcmp(chave, no_criado->chaves[i]) < 0) {
 			return no_criado->filhos[i];
 		}
 	}
-	return no_criado->filhos[ORDEM] ;
+	return no_criado->filhos[ORDEM-1];
 }

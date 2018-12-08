@@ -30,7 +30,7 @@ no* busca_no (no *no_recebido, char* chave);
 
 int compara_string(char* string1, char* string2);
 
-void insertionSort(char array[ORDEM][TAM_CHAVE], int n, int prr_lista[ORDEM]);
+void insertionSort(char array[ORDEM][TAM_CHAVE], int n, int* prr_lista);
 
 void ordena_ponteiros(no* pNoPai, int n);
 

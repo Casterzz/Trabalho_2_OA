@@ -72,7 +72,6 @@ void escreveArq(FILE *ptrArq, no *pNo) {
     }
  
 // percorre todos os filhos recursivamente
-//  for (todos os filhos) {
     for (int i = 0; i < ORDEM; i++) {
         escreveArq(ptrArq, pNo->filhos[i]);
     }
@@ -83,14 +82,14 @@ void escreveArq(FILE *ptrArq, no *pNo) {
         if (i < pNo->qtd_chaves) {
             fprintf(ptrArq, "%s %d\n", pNo->chaves[i], pNo->prr[i]);
         } else {
-            fprintf(ptrArq, "*        -1\n");
+            fprintf(ptrArq, "~        -1\n");
         }
     }
     for (int i = 0; i < ORDEM; i++) {    // escreve filhos
         if (pNo->filhos[i] != NULL) {
-            fprintf(ptrArq, "%d ", pNo->filhos[i]->identidade);
+            fprintf(ptrArq, "%d\n", pNo->filhos[i]->identidade);
         } else {
-            fprintf(ptrArq, "-1 ");
+            fprintf(ptrArq, "-1\n");
         }
     }
     fprintf(ptrArq, "\n\n");
