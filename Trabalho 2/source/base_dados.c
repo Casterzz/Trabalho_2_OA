@@ -7,6 +7,8 @@ no* atualiza_dados(FILE* arq_base) {
 	no* raiz = (no*)malloc(sizeof(no)); 
     raiz->qtd_chaves = 0;
     int prr = -1;
+    int ID = 0;
+    raiz->identidade = ID;
     for (int i = 0; i < ORDEM; i++) {
         raiz->filhos[i] = NULL;
     }
@@ -25,12 +27,16 @@ no* atualiza_dados(FILE* arq_base) {
     	registro[8] = '\0';
     	//printf("%s\n", registro);
 
-        printf("<Incluindo registro %s, PRR = %d>\n\n", registro, prr+1);
+        printf("<Incluindo registro %s, PRR = %d>\n", registro, prr+1);
 
-    	insere_chave(&raiz, registro, &prr);
-        mostraArvore(raiz, 0);
-        printf("\n\n\n");
+    	insere_chave(&raiz, registro, &prr, &ID);
     }
+    printf("\n");
+    mostraArvore(raiz, 0);
+    FILE *arquivo = fopen("indicelista.bt", "w");
+    escreveArq(arquivo, raiz);
+    fclose(arquivo);
+
     return raiz;
 }
 
@@ -53,4 +59,49 @@ void mostraArvore(no* NoAtual, int espaco_inicial) {
         imprimeNo(NoAtual->chaves[i], espaco_inicial, NoAtual->prr[i]);
     }
     mostraArvore(NoAtual->filhos[i], espaco_inicial+1);
+}
+
+void escreveArq(FILE *ptrArq, no *pNo) {
+    // se no for NULL
+    if (pNo == NULL) {
+        return;
+    }
+
+    if (pNo->pai == NULL) {
+        fprintf(ptrArq, "%d\n\n", pNo->identidade);
+    }
+ 
+// percorre todos os filhos recursivamente
+//  for (todos os filhos) {
+    for (int i = 0; i < ORDEM; i++) {
+        escreveArq(ptrArq, pNo->filhos[i]);
+    }
+
+// escreve dados do no atual
+    fprintf(ptrArq, "#\n%d\n", pNo->identidade);    // cabecalho
+    for (int i = 0; i < ORDEM-1; i++) {    // escreve chaves
+        if (i < pNo->qtd_chaves) {
+            fprintf(ptrArq, "%s %d\n", pNo->chaves[i], pNo->prr[i]);
+        } else {
+            fprintf(ptrArq, "*        -1\n");
+        }
+    }
+    for (int i = 0; i < ORDEM; i++) {    // escreve filhos
+        if (pNo->filhos[i] != NULL) {
+            fprintf(ptrArq, "%d ", pNo->filhos[i]->identidade);
+        } else {
+            fprintf(ptrArq, "-1 ");
+        }
+    }
+    fprintf(ptrArq, "\n\n");
+}
+
+void mostra_arq_ind() {
+    char linha_atual[20]; 
+    FILE *arq = fopen("indicelista.bt", "r");
+    printf("<ARQUIVO INDICELISTA.BT>\n\n");
+    while (fgets(linha_atual, 20, arq) != NULL) {
+        printf("%s", linha_atual);   
+    }
+    printf("\n");
 }

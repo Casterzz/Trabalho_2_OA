@@ -1,6 +1,6 @@
 #include "arvoreB.h"
 
-int insere_chave (no **raiz, char* chave, int *prr) {
+int insere_chave (no **raiz, char* chave, int *prr, int *ID) {
     no* pNo = busca_no (*raiz, chave);
     char lista[ORDEM][TAM_CHAVE];
     int prr_lista[ORDEM];
@@ -36,11 +36,11 @@ int insere_chave (no **raiz, char* chave, int *prr) {
         pNo->filhos[pNo->qtd_chaves+1] = NULL;
         insertionSort(lista, pNo->qtd_chaves+1, prr_lista); 
         //ordena_ponteiros(pNo, pNo->qtd_chaves, changes);
-        promove(raiz, pNo, lista, pNo->qtd_chaves+1, prr_lista);
+        promove(raiz, pNo, lista, pNo->qtd_chaves+1, prr_lista, ID);
     }
 }
 
-void promove (no **raiz, no *pNo, char lista[ORDEM][TAM_CHAVE], int qtd_lista, int prr_lista[ORDEM]) {
+void promove (no **raiz, no *pNo, char lista[ORDEM][TAM_CHAVE], int qtd_lista, int prr_lista[ORDEM], int *ID) {
 
     // Acha meio
     int meio = ceil(qtd_lista/2);
@@ -59,6 +59,8 @@ void promove (no **raiz, no *pNo, char lista[ORDEM][TAM_CHAVE], int qtd_lista, i
 
     // Cria no irmao e atualiza chaves
     no *pNovo = (no*)malloc(sizeof(no));
+    *ID = *ID + 1;
+    pNovo->identidade = *ID;
 
     for(int i = 0; i < meio-1; i++) { 
         for (int j = 0; j < TAM_CHAVE; j++) {
@@ -101,6 +103,9 @@ void promove (no **raiz, no *pNo, char lista[ORDEM][TAM_CHAVE], int qtd_lista, i
     if (pNo->pai == NULL) {
         no *pPai = (no*)malloc(sizeof(no));
         *raiz = pPai;
+        *ID = *ID + 1;
+        pPai->pai = NULL;
+        pPai->identidade = *ID;
         for (int i = 0; i < TAM_CHAVE; i++) {
             pPai->chaves[0][i] = elemento_div[i];    
         }
@@ -114,7 +119,7 @@ void promove (no **raiz, no *pNo, char lista[ORDEM][TAM_CHAVE], int qtd_lista, i
         pNo->pai = pPai;
         pPai->qtd_chaves = 1;
     } else {
-
+    	pNovo->pai = pNo->pai;
         // Se tiver espaco, simplesmente insere
         if (pNo->pai->qtd_chaves < ORDEM-1) {
             
@@ -144,7 +149,6 @@ void promove (no **raiz, no *pNo, char lista[ORDEM][TAM_CHAVE], int qtd_lista, i
             pNo->pai->filhos[pNo->pai->qtd_chaves+1] = maior;
             pNo->pai->filhos[pNo->pai->qtd_chaves] = menor;
 
-            pNovo->pai = pNo->pai;
             pNo->pai->qtd_chaves++;
 
             // inserir pNovo no array filhos do pai
@@ -173,7 +177,7 @@ void promove (no **raiz, no *pNo, char lista[ORDEM][TAM_CHAVE], int qtd_lista, i
             pNo->pai->filhos[pNo->pai->qtd_chaves+1] = pNovo;
             ordena_ponteiros(pNo->pai, ORDEM+1);
 
-            promove(raiz, pNo->pai, lista, pNo->pai->qtd_chaves+1, prr_lista);
+            promove(raiz, pNo->pai, lista, pNo->pai->qtd_chaves+1, prr_lista, ID);
         }
     }
 }
@@ -228,33 +232,7 @@ void insertionSort(char array[ORDEM][TAM_CHAVE], int n, int prr_lista[ORDEM]) {
     }
 }
 
-/*
-void ordena_ponteiros(no *pNo, int n, int changes[ORDEM+1]) {
-    int i, j; 
-    int chave_changes;
-    no *aux;
-    for (i = 1; i < n; i++) {
-        chave_changes = changes[i];
-        aux = pNo->filhos[i];
-        j = i-1;
-
-        while (j >= 0 && changes[j] > chave_changes) { 
-            changes[j+1] = changes[j];
-            pNo->filhos[j+1] = pNo->filhos[j];
-            j = j-1; 
-        }
-        changes[j+1] = chave_changes;
-        pNo->filhos[j+1] = aux;
-    }
-}
-*/
-
 void ordena_ponteiros(no* pNoPai, int n) { 
-    for (int i = 0; i < pNoPai->qtd_chaves+1; i++) {
-        printf("%s ", pNoPai->filhos[i]->chaves[0]);
-    }
-    printf("\n");
-
     int i, j;
     no* aux;
     for (i = 1; i < n; i++) {
@@ -267,9 +245,72 @@ void ordena_ponteiros(no* pNoPai, int n) {
         }
         pNoPai->filhos[j+1] = aux;
     }
+}
 
-    for (int i = 0; i < pNoPai->qtd_chaves+1; i++) {
-        printf("%s ", pNoPai->filhos[i]->chaves[0]);
+int busca_registro(char chave[TAM_CHAVE], FILE *arq, int ID_atual) {
+	rewind(arq);
+	//converter string p chave
+
+	//encontrar e carregar no raiz
+	char linha_atual[20];
+	char inicio;
+	int ID_lido;
+	no_leitura *no_criado;
+	int prr;
+
+    while (fgets(linha_atual, 20, arq) != NULL) {
+        if (linha_atual[0] == '#') {
+        	fscanf(arq, "%d\n", &ID_lido);
+        	if (ID_lido == ID_atual) {
+        		no_criado = cria_no(arq);
+        		prr = verifica_chave(chave, no_criado);
+        		if (prr != -1) {
+        			printf("Registro encontrado!\n");
+        			free(no_criado);
+        			return prr;
+        		} else {
+        			ID_atual = direciona(chave, no_criado);
+        			free(no_criado);
+        			if (ID_atual == -1) {
+        				return -1;
+        			}
+        			return busca_registro(chave, arq, ID_atual);
+        		}
+        	}
+        }
     }
-    printf("\n\n\n");
+    return -1;
+}
+
+no_leitura *cria_no(FILE *arq){
+	char lixo[5];
+
+	no_leitura *no_virtual = (no_leitura*)malloc(sizeof(no_leitura));
+	for (int i = 0; i < ORDEM-1; i++) {
+		fgets(no_virtual->chaves[i], TAM_CHAVE-1, arq);
+		fgets(lixo, 1, arq);
+		fscanf(arq, "%d\n", &no_virtual->prr[i]);
+	}
+	for (int i = 0; i < ORDEM; i++) {
+		fscanf(arq, "%d ", &no_virtual->filhos[i]);
+	}
+	return no_virtual;
+}
+
+int verifica_chave(char chave[TAM_CHAVE], no_leitura *no_criado) {
+	for (int i = 0; i < ORDEM; i++) {
+		if (chave == no_criado->chaves[i]) {
+			return no_criado->prr[i];
+		}
+	}
+	return -1;
+}
+
+int direciona(char chave[TAM_CHAVE], no_leitura *no_criado) {
+	for (int i = 0; i < ORDEM; i++) {
+		if (strcmp(chave, no_criado->chaves[i]) > 0) {
+			return no_criado->filhos[i];
+		}
+	}
+	return no_criado->filhos[ORDEM] ;
 }
