@@ -1,9 +1,20 @@
-# include "arvoreB.h"
+/*
+    Codigo feito por:
+        Pedro Victor Rodrigues de Carvalho (17/0113043)
+        Victor Eduardo Fernandes Castor (17/0115127)
+    Universidade de Brasília, Segundo semestre de 2018
+    Curso: Engenharia de Computacao
+    Materia: Organizacao de Arquivos
+    Professor: Camilo Dorea
+    Projeto 2: Registros em Arvore B
+*/
+
+#include "arvoreB.h"
 
 #define TAM_REG 60
 #define CAMPO_1 41
 
-no* atualiza_dados(FILE* arq_base) {
+void atualiza_dados(FILE* arq_base) {
 	no* raiz = (no*)malloc(sizeof(no)); 
     raiz->qtd_chaves = 0;
     int prr = -1;
@@ -25,19 +36,28 @@ no* atualiza_dados(FILE* arq_base) {
     		registro[i + 3] = linha_atual[CAMPO_1 + i];
     	}
     	registro[8] = '\0';
-    	//printf("%s\n", registro);
-
-        printf("<Incluindo registro %s, PRR = %d>\n", registro, prr+1);
 
     	insere_chave(&raiz, registro, &prr, &ID);
     }
-    printf("\n");
+    printf("\n\t  ARVORE B\n\n");
     mostraArvore(raiz, 0);
     FILE *arquivo = fopen("indicelista.bt", "w");
     escreveArq(arquivo, raiz);
     fclose(arquivo);
 
-    return raiz;
+    // DESALOCAR
+    liberaNo(raiz);
+    return;
+}
+
+void liberaNo(no* pNo) {
+    if (pNo == NULL) {
+        return;
+    }
+    for (int i = 0; i < ORDEM; i++) {
+        liberaNo(pNo->filhos[i]);
+    }
+    free(pNo);
 }
 
 void imprimeNo(char *nome, int espacos, int prr) {
@@ -51,7 +71,6 @@ void imprimeNo(char *nome, int espacos, int prr) {
 void mostraArvore(no* NoAtual, int espaco_inicial) {
     int i;
     if (NoAtual == NULL) {
-        //imprimeNo("*", espaco_inicial+1);
         return;
     }
     for (i = 0; i < NoAtual->qtd_chaves; i++) {

@@ -1,6 +1,21 @@
+/*
+    Codigo feito por:
+        Pedro Victor Rodrigues de Carvalho (17/0113043)
+        Victor Eduardo Fernandes Castor (17/0115127)
+    Universidade de Brasília, Segundo semestre de 2018
+    Curso: Engenharia de Computacao
+    Materia: Organizacao de Arquivos
+    Professor: Camilo Dorea
+    Projeto 2: Registros em Arvore B
+*/
+
 #include "arvoreB.h"
 
 int insere_chave (no **raiz, char* chave, int *prr, int *ID) {
+    if (chave[0] == '*') {
+        return 0;
+    }
+
     no* pNo = busca_no (*raiz, chave);
     char lista[ORDEM][TAM_CHAVE];
     int prr_lista[ORDEM];
@@ -19,7 +34,6 @@ int insere_chave (no **raiz, char* chave, int *prr, int *ID) {
         pNo->qtd_chaves++;
 
         insertionSort(pNo->chaves, pNo->qtd_chaves, pNo->prr);
-        //ordena_ponteiros(pNo, pNo->qtd_chaves, changes);
     } else {
         for (int i = 0; i < pNo->qtd_chaves; i++) {
             for (int j = 0; j < TAM_CHAVE; j++) {    
@@ -35,7 +49,6 @@ int insere_chave (no **raiz, char* chave, int *prr, int *ID) {
         pNo->prr[pNo->qtd_chaves] = *prr;
         pNo->filhos[pNo->qtd_chaves+1] = NULL;
         insertionSort(lista, pNo->qtd_chaves+1, prr_lista); 
-        //ordena_ponteiros(pNo, pNo->qtd_chaves, changes);
         promove(raiz, pNo, lista, pNo->qtd_chaves+1, prr_lista, ID);
     }
 }
@@ -156,7 +169,6 @@ void promove (no **raiz, no *pNo, char lista[ORDEM][TAM_CHAVE], int qtd_lista, i
             ordena_ponteiros(pNo->pai, pNo->pai->qtd_chaves+1);
 
             insertionSort(pNo->pai->chaves, pNo->pai->qtd_chaves, pNo->pai->prr);
-            //ordena_ponteiros(pNo->pai, pNo->pai->qtd_chaves, changes);
 
         // Se nao tiver espaco, passa elemento divisor para cima e promove    
         } else {
@@ -171,7 +183,6 @@ void promove (no **raiz, no *pNo, char lista[ORDEM][TAM_CHAVE], int qtd_lista, i
             }
             prr_lista[pNo->pai->qtd_chaves] = prr_div;
             insertionSort(lista, pNo->pai->qtd_chaves+1, prr_lista);
-            //ordena_ponteiros(pNo->pai, pNo->pai->qtd_chaves, changes);
 
             // inserir pNovo no array filhos do pai
             pNo->pai->filhos[pNo->pai->qtd_chaves+1] = pNovo;
@@ -192,7 +203,7 @@ no* busca_no (no *no_recebido, char* chave) {
         if (situacao < 0) {
             continue;
         } else if (situacao == 0) {
-            printf("elemento ja existe\n");
+            printf("Elemento ja existe\n");
             return NULL;
         } else if (situacao > 0) {
             if (aux->filhos[i] == NULL) {
@@ -249,8 +260,6 @@ void ordena_ponteiros(no* pNoPai, int n) {
 
 int busca_registro(char chave[TAM_CHAVE], FILE *arq, int ID_atual) {
 	rewind(arq);
-	//converter string p chave
-
 	//encontrar e carregar no raiz
 	char linha_atual[20];
 	char inicio;
